@@ -151,157 +151,106 @@ const userController = {
   },
 
   putUser: (req, res) => {
-    const { name, introduction } = req.body
+    let { account, name, email, password, passwordConfirm, introduction, avatar, cover } = req.body
     const { id } = req.params
-    if (helpers.getUser(req).id === Number(id)) {
-      return User.findByPk(id)
-        .then(user => {
-          user.update({
-            name,
-            introduction
-          })
-          return res.json({ status: 'success', message: 'user profile updated successfully' })
-        }).catch(err => console.log(err))
-    } else {
-      return res.json({ status: 'error', message: 'permission denied' })
-    }
-    // let { account, name, email, password, passwordConfirm, introduction } = req.body
-    // const { id } = req.params
 
     //check user
-    // if (helpers.getUser(req).id === Number(id)) {
+    if (req.user.id === Number(id)) {
 
-    //   if (!req.files) {
-    //     // user edit profile page without image
-    //     if (name || introduction && !account && !email && !password && !passwordConfirm) {
-    //       return User.findByPk(id)
-    //         .then(user => {
-    //           user.update({
-    //             name: name || user.name,
-    //             introduction: introduction || user.introduction
-    //           })
-    //           return res.json({ status: 'success', message: 'user profile updated successfully' })
-    //         }).catch(err => console.log(err))
-    //     }
+      if (!req.files) {
+        // user change password
+        if (password || passwordConfirm) {
+          if (password !== passwordConfirm) return res.json({ status: 'error', message: 'password or passwordConfirm is incorrect' })
+          return User.findByPk(id)
+            .then(user => {
+              user.update({
+                account,
+                name,
+                email,
+                password: bcrypt.hashSync(password, bcrypt.genSaltSync(10), null)
+              }).then(() => { return res.json({ status: 'success', message: 'user info updated successfully' }) })
+            }).catch(err => console.log(err))
+        }
+        // user doesn't change password
+        return User.findByPk(id)
+          .then(user => {
+            user.update({
+              account,
+              email,
+              name,
+              introduction,
+              avatar,
+              cover
+            }).then((user) => {
+              return res.json({ status: 'success', message: 'user info updated successfully' })
+            }).catch(err => console.log(err))
+          }).catch(err => console.log(err))
+      }
 
-    //     // 不能有空白
-    //     if (account) account = account.replace(/\s*/g, "")
-    //     if (email) email = email.replace(/\s*/g, "")
+      if (req.files) {
+        const uploadAvatarImage = new Promise((resolve, reject) => {
+          let imageURL = { avatar: '' }
+          imgur.setClientID(IMGUR_CLIENT_ID)
+          // upload avatar image
+          if (req.files.avatar) {
+            imgur.upload(req.files.avatar[0].path, (err, img) => {
+              if (err) return reject(err)
+              imageURL.avatar = img.data.link
+              resolve(imageURL)
+            })
+          } else {
+            imageURL.avatar = null
+            resolve(imageURL)
+          }
+        })
 
-    //     // user edit account page
-    //     if (account || email || password || passwordConfirm || name && !introduction) {
-    //       return User.findByPk(id)
-    //         .then(user => {
-    //           if (account && account !== user.account) {
-    //             return User.findOne({ where: { account } })
-    //               .then(userAccount => {
-    //                 if (userAccount) return res.json({ status: 'error', message: `account "${account}" is registered` })
-    //               })
-    //           }
+        const uploadCoverImage = new Promise((resolve, reject) => {
+          let imageURL = { cover: '' }
+          imgur.setClientID(IMGUR_CLIENT_ID)
+          // upload cover image
+          if (req.files.cover) {
+            imgur.upload(req.files.cover[0].path, (err, img) => {
+              if (err) return reject(err)
+              imageURL.cover = img.data.link
+              resolve(imageURL)
+            })
+          } else {
+            imageURL.cover = null
+            resolve(imageURL)
+          }
+        })
 
-    //           if (email && email !== user.email) {
-    //             return User.findOne({ where: { email } })
-    //               .then(userEmail => {
-    //                 if (userEmail) return res.json({ status: 'error', message: `"email ${email}" is registered` })
-    //               })
-    //           }
+        async function updateUser() {
+          // user edit profile page and upload image
+          let avatarURL = ''
+          let coverURL = ''
+          if (req.files.avatar) {
+            avatarURL = await uploadAvatarImage
+              .catch(err => console.log(err))
+          }
+          if (req.files.cover) {
+            coverURL = await uploadCoverImage
+              .catch(err => console.log(err))
+          }
 
-    //           if (password || passwordConfirm) {
-    //             if (password !== passwordConfirm) return res.json({ status: 'error', message: 'password or passwordConfirm is incorrect' })
-    //             user.update({
-    //               account: account || user.account,
-    //               name: name || user.name,
-    //               email: email || user.email,
-    //               password: bcrypt.hashSync(password, bcrypt.genSaltSync(10), null)
-    //             })
-    //             return res.json({ status: 'success', message: 'user account updated successfully' })
-    //           }
+          return User.findByPk(id)
+            .then(user => {
+              user.update({
+                name: name || user.name,
+                introduction: introduction || user.introduction,
+                avatar: avatarURL.avatar || user.avatar,
+                cover: coverURL.cover || user.cover
+              }).then(() => { return res.json({ status: 'success', message: 'user profile updated successfully' }) })
 
-    //           user.update({
-    //             account: account || user.account,
-    //             name: name || user.name,
-    //             email: email || user.email
-    //           })
-    //           return res.json({ status: 'success', message: 'user account updated successfully' })
-    //         }).catch(err => console.log(err))
-    //     }
+            }).catch(err => console.log(err))
+        }
+        // user edit profile page with image
+        updateUser()
+      }
 
-
-
-    //   }
-
-    //   if (req.files) {
-    //     const uploadAvatarImage = new Promise((resolve, reject) => {
-    //       let imageURL = { avatar: '' }
-    //       imgur.setClientID(IMGUR_CLIENT_ID)
-    //       // upload avatar image
-    //       if (req.files.avatar) {
-    //         imgur.upload(req.files.avatar[0].path, (err, img) => {
-    //           if (err) return reject(err)
-    //           // if (err) {
-    //           //   console.log(`[ERROR]: ${err}`)
-    //           //   return res.json({ status: 'error', message: 'something wrong when uploading to imgur' })
-    //           // }
-    //           imageURL.avatar = img.data.link
-    //           resolve(imageURL)
-    //         })
-    //       } else {
-    //         imageURL.avatar = null
-    //         resolve(imageURL)
-    //       }
-    //     })
-
-    //     const uploadCoverImage = new Promise((resolve, reject) => {
-    //       let imageURL = { cover: '' }
-    //       imgur.setClientID(IMGUR_CLIENT_ID)
-    //       // upload cover image
-    //       if (req.files.cover) {
-    //         imgur.upload(req.files.cover[0].path, (err, img) => {
-    //           if (err) return reject(err)
-    //           // if (err) {
-    //           //   console.log(`[ERROR]: ${err}`)
-    //           //   return res.json({ status: 'error', message: 'something wrong when uploading to imgur' })
-    //           // }
-    //           imageURL.cover = img.data.link
-    //           resolve(imageURL)
-    //         })
-    //       } else {
-    //         imageURL.cover = null
-    //         resolve(imageURL)
-    //       }
-    //     })
-
-    //     async function updateUser() {
-    //       // user edit profile page and upload image
-    //       let avatarURL = ''
-    //       let coverURL = ''
-    //       if (req.files.avatar) {
-    //         avatarURL = await uploadAvatarImage
-    //           .catch(err => console.log(err))
-    //       }
-    //       if (req.files.cover) {
-    //         coverURL = await uploadCoverImage
-    //           .catch(err => console.log(err))
-    //       }
-    //       console.log(avatarURL, coverURL)
-    //       return User.findByPk(id)
-    //         .then(user => {
-    //           user.update({
-    //             name: name || user.name,
-    //             introduction: introduction || user.introduction,
-    //             avatar: avatarURL.avatar || user.avatar,
-    //             cover: coverURL.cover || user.cover
-    //           })
-    //           return res.json({ status: 'success', message: 'user profile updated successfully' })
-    //         }).catch(err => console.log(err))
-    //     }
-    //     // user edit profile page with image
-    //     updateUser()
-    //   }
-
-    // } else {
-    //   return res.json({ status: "error", "message": "permission denied" })
-    // }
+    } else {
+      return res.json({ status: "error", "message": "permission denied" })
+    }
 
 
 
@@ -314,7 +263,7 @@ const userController = {
       const data = user.Followers.map(r => ({
         ...r.dataValues,
         followerId: r.id,
-        isFollowing: helpers.getUser(req).Followings.map(d => d.id).includes(r.id)
+        isFollowing: req.user.Followings.map(d => d.id).includes(r.id)
       }))
       return res.json(data)
     }).catch(err => console.log(err))
@@ -327,16 +276,16 @@ const userController = {
       const data = user.Followings.map(r => ({
         ...r.dataValues,
         followingId: r.id,
-        isFollowing: helpers.getUser(req).Followings.map(d => d.id).includes(r.id)
+        isFollowing: req.user.Followings.map(d => d.id).includes(r.id)
       }))
       return res.json(data)
     }).catch(err => console.log(err))
   },
 
   addFollowing: (req, res) => {
-    if (Number(helpers.getUser(req).id) !== Number(req.body.id)) {
+    if (Number(req.user.id) !== Number(req.body.id)) {
       return Followship.create({
-        followerId: helpers.getUser(req).id,
+        followerId: req.user.id,
         followingId: req.body.id
       })
         .then((followship) => {
@@ -352,7 +301,7 @@ const userController = {
   removeFollowing: (req, res) => {
     return Followship.findOne({
       where: {
-        followerId: helpers.getUser(req).id,
+        followerId: req.user.id,
         followingId: req.params.followingId
       }
     })
@@ -366,7 +315,7 @@ const userController = {
 
   addLike: (req, res) => {
     return Like.create({
-      UserId: helpers.getUser(req).id,
+      UserId: req.user.id,
       TweetId: req.params.id
     })
       .then((like) => {
@@ -376,7 +325,7 @@ const userController = {
   removeLike: (req, res) => {
     return Like.findOne({
       where: {
-        UserId: helpers.getUser(req).id,
+        UserId: req.user.id,
         TweetId: req.params.id
       }
     })
