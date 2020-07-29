@@ -22,9 +22,9 @@ app.use((req, res, next) => {
   next()
 })
 function authenticated(req, res, next){
-  // passport.authenticate('jwt', { ses...
+  return passport.authenticate('jwt', { session: false })
 };
 
 module.exports = app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
-require('./routes')(app)
+require('./routes')(app, authenticated)
