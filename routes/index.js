@@ -10,8 +10,6 @@ const userController = require('../controllers/userController.js')
 const adminController = require('../controllers/adminController.js')
 
 // middleware
-
-
 const authenticatedAdmin = (req, res, next) => {
   if (req.user) {
     if (req.user.role === 'admin') { return next() }
