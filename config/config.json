@@ -15,7 +15,13 @@
     "logging": false
   },
   "production": {
-    "use_env_variable": "CLEARDB_DATABASE_URL"
+    "use_env_variable": "CLEARDB_DATABASE_URL",
+    "dialectOptions": {
+      "ssl": {
+        "rejectUnauthorized": false,
+        "minVersion": "TLSv1"
+      }
+    }
   },
   "travis": {
     "username": "travis",
