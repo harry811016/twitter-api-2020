@@ -58,7 +58,7 @@ module.exports = {
 
     const tweetsIdArray = []
     for (let i = 0; i < repliesEachTweet; i++) {
-      for (let j = 1; j <= userCounts * tweetsEachUser + 451; j += 10) {
+      for (let j = 1; j <= userCounts * tweetsEachUser + 441; j += 10) {
         tweetsIdArray.push(j)
       }
     }
