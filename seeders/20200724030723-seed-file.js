@@ -28,7 +28,7 @@ module.exports = {
           email: `user${i}@example.com`,
           password: bcrypt.hashSync('12345678', bcrypt.genSaltSync(10), null),
           role: 'user',
-          avatar: 'https://loremflickr.com/320/240/restaurant,food/?random=${Math.random() * 100}',
+          avatar: 'https://loremflickr.com/320/240/people/?random=${Math.random() * 100}',
           createdAt: new Date(),
           updatedAt: new Date()
         })
