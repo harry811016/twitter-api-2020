@@ -35,7 +35,7 @@ module.exports = {
 
     const tweetsUserIdArray = []
     for (let i = 0; i < tweetsEachUser; i++) {
-      for (let j = 2; j <= userCounts + 1; j++) {
+      for (let j = 11; j <= userCounts + 46; j += 10) {
         tweetsUserIdArray.push(j)
       }
     }
@@ -51,14 +51,14 @@ module.exports = {
 
     const repliesUserIdArray = []
     for (let i = 0; i < tweetsEachUser * repliesEachTweet; i++) {
-      for (let j = 2; j <= userCounts + 1; j++) {
+      for (let j = 11; j <= userCounts + 46; j += 10) {
         repliesUserIdArray.push(j)
       }
     }
 
     const tweetsIdArray = []
     for (let i = 0; i < repliesEachTweet; i++) {
-      for (let i = 1; i <= userCounts * tweetsEachUser; i++) {
+      for (let i = 11; i <= userCounts * tweetsEachUser + 451; i += 10) {
         tweetsIdArray.push(i)
       }
     }
