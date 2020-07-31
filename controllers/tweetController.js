@@ -14,7 +14,7 @@ let tweetController = {
     }).then(tweets => {
       const data = tweets.map(r => ({
         ...r.dataValues,
-        // description: r.dataValues.description.substring(0, 50),
+        description: r.dataValues.description.substring(0, 50),
         // tweetCreatedAt: moment(r.dataValues.createdAt).fromNow(),
         // userName: r.User.name,
         // userAvatar: r.User.avatar,
